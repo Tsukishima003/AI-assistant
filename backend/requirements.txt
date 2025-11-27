@@ -1,0 +1,12 @@
+python-dotenv
+fastapi
+uvicorn[standard]
+python-multipart
+langchain
+langchain-community
+langchain-groq
+chromadb
+pypdf
+docx2txt
+tiktoken
+sentence-transformers
