@@ -193,7 +193,3 @@ MIT License - feel free to use for personal or commercial projects.
 ## Contributing
 
 Contributions welcome! Feel free to submit issues or pull requests.
-
----
-
-Built with ❤️ using Groq Llama, LangChain, ChromaDB, and FastAPI
