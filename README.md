@@ -2,18 +2,18 @@
 
 A modern, real-time AI assistant powered by **Retrieval-Augmented Generation (RAG)** using **Groq Llama** and **ChromaDB**. Chat with your documents and get intelligent, context-aware answers with beautiful streaming responses.
 
-## ✨ Features
+## Features
 
-- 🤖 **Groq Llama Integration** - Lightning-fast responses using Groq's LLM API
-- 🔍 **RAG Pipeline** - Intelligent document retrieval with semantic search
-- 💾 **ChromaDB Vector Store** - Persistent local vector database
-- ⚡ **Real-Time Streaming** - Watch responses appear token-by-token via WebSocket
-- 📄 **Multi-Format Support** - Upload PDF, DOCX, and TXT documents
-- 🎨 **Premium UI** - Dark mode with glassmorphism and smooth animations
-- 📱 **Responsive Design** - Works seamlessly on desktop and mobile
-- 📚 **Source Citations** - See which documents informed each answer
+- **Groq Llama Integration** - Lightning-fast responses using Groq's LLM API
+- **RAG Pipeline** - Intelligent document retrieval with semantic search
+- **ChromaDB Vector Store** - Persistent local vector database
+- **Real-Time Streaming** - Watch responses appear token-by-token via WebSocket
+- **Multi-Format Support** - Upload PDF, DOCX, and TXT documents
+- **Premium UI** - Dark mode with glassmorphism and smooth animations
+- **Responsive Design** - Works seamlessly on desktop and mobile
+- **Source Citations** - See which documents informed each answer
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -83,31 +83,7 @@ Then navigate to `http://localhost:3000`
 
 - See document count in the sidebar
 - Click "Clear All" to remove all documents
-
-## 🏗️ Architecture
-
-```
-┌─────────────┐         WebSocket        ┌──────────────┐
-│   Frontend  │ ◄──────────────────────► │   FastAPI    │
-│  (HTML/CSS) │                          │   Backend    │
-│     +JS     │         REST API         │              │
-└─────────────┘ ◄──────────────────────► └──────┬───────┘
-                                                 │
-                                                 ▼
-                                         ┌──────────────┐
-                                         │  RAG Engine  │
-                                         │              │
-                                         │  ┌────────┐  │
-                                         │  │ Groq   │  │
-                                         │  │ Llama  │  │
-                                         │  └────────┘  │
-                                         │  ┌────────┐  │
-                                         │  │Chroma  │  │
-                                         │  │  DB    │  │
-                                         │  └────────┘  │
-                                         └──────────────┘
-```
-
+- 
 ### Components
 
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript with WebSocket
@@ -139,7 +115,7 @@ CHUNK_SIZE=1000
 CHUNK_OVERLAP=200
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 RAG LC/
@@ -157,7 +133,7 @@ RAG LC/
 └── README.md               # This file
 ```
 
-## 🎯 API Endpoints
+## API Endpoints
 
 ### REST API
 
@@ -172,7 +148,7 @@ RAG LC/
 
 - `WS /ws/chat` - Real-time streaming chat
 
-## 🎨 UI Features
+## UI Features
 
 - **Dark Mode**: Eye-friendly dark theme
 - **Glassmorphism**: Modern translucent panels
@@ -182,7 +158,7 @@ RAG LC/
 - **Toast Notifications**: Elegant status messages
 - **Drag-and-Drop**: Easy document uploads
 
-## 🔒 Security Notes
+## Security Notes
 
 This is a development setup. For production:
 
@@ -193,7 +169,7 @@ This is a development setup. For production:
 - Validate and sanitize all inputs
 - Add file upload size limits
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 **WebSocket connection fails:**
 - Ensure backend is running on port 8000
@@ -210,11 +186,11 @@ This is a development setup. For production:
 - Check if documents are uploaded
 - Monitor backend console for errors
 
-## 📝 License
+## License
 
 MIT License - feel free to use for personal or commercial projects.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Feel free to submit issues or pull requests.
 
