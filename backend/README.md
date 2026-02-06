@@ -145,14 +145,144 @@ The application uses:
 - **ChromaDB** - Vector database
 - **Groq** - LLM provider
 
-## environment Variables
+## 🗄️ ChromaDB Architecture
 
-Set in `.env` file:
+This application uses **ChromaDB in HTTP Server Mode** - ChromaDB runs as a separate Docker service that your backend connects to via HTTP.
+
+**Architecture:**
+```
+┌─────────────┐         ┌──────────────┐
+│   FastAPI   │ ────────▶│  ChromaDB    │
+│  Backend    │  HTTP    │   Server     │
+│  (Port 8001)│         │  (Port 8000) │
+└─────────────┘         └──────────────┘
+```
+
+**Benefits:**
+- **Scalability**: ChromaDB scales independently from backend
+- **Resource Isolation**: Backend crashes don't affect ChromaDB
+- **Data Persistence**: Vectors stored in Docker volume
+- **Zero-Downtime Updates**: Update backend without losing vectors
+
+---
+
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+```bash
+# 1. Copy environment file
+cp .env.example .env
+
+# 2. Edit .env and add your GROQ_API_KEY
+nano .env
+
+# 3. Start all services
+docker compose up -d
+
+# 4. Check service health
+curl http://localhost:8001/health
+curl http://localhost:8000/api/v1/heartbeat
+```
+
+### Service Architecture
+
+```yaml
+services:
+  chromadb:    # Vector database server
+    - Port: 8000
+    - Volume: chroma_data
+    
+  backend:     # FastAPI application
+    - Port: 8001 → 8000
+    - Depends on: chromadb
+```
+
+### Docker Commands
+
+```bash
+# View logs
+docker compose logs -f backend
+docker compose logs -f chromadb
+
+# Restart backend only
+docker compose restart backend
+
+# Rebuild and restart
+docker compose up -d --build
+
+# Check status
+docker compose ps
+
+# Stop all services
+docker compose down
+
+# Stop and remove volumes (⚠️ deletes data)
+docker compose down -v
+```
+
+---
+
+## 📋 Environment Variables
+
+Create a `.env` file (use `.env.example` as template):
+
 ```env
-GROQ_API_KEY=your_api_key
-GROQ_MODEL=llama-3.1-70b-versatile
+# ChromaDB Server Configuration
+CHROMA_SERVER_HOST=chromadb
+CHROMA_SERVER_PORT=8000
+CHROMA_COLLECTION_NAME=documents
+
+# Groq AI Configuration (REQUIRED)
+GROQ_API_KEY=your_groq_api_key_here
+GROQ_MODEL=llama-3.3-70b-versatile
+
+# Server Configuration
 HOST=0.0.0.0
 PORT=8000
+
+# Document Processing
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
+
+---
+
+## 🚀 Quick Start Guide
+
+### Production Deployment (with Docker)
+
+```bash
+# 1. Configure environment
+cp .env.example .env
+# Edit .env: Add your GROQ_API_KEY
+
+# 2. Start services
+docker compose up -d
+
+# 3. Verify deployment
+curl http://localhost:8001/health
+```
+
+### Local Development (without Docker)
+
+**Note**: For local development, you still need ChromaDB server running.
+
+```bash
+# 1. Start ChromaDB server separately
+docker run -p 8000:8000 chromadb/chroma:latest
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env: Set CHROMA_SERVER_HOST=localhost
+
+# 4. Run the application
+python app/main.py
+# OR
+uvicorn app.main:app --reload --port 8001
 ```
 
 ## 📚 Code Examples

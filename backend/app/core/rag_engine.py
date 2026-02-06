@@ -15,15 +15,10 @@ class RAGEngine:
         self,
         groq_api_key: str,
         model_name: str = "llama-3.1-70b-versatile",
-        # Local mode
-        persist_directory: str = "./chroma_db",
         collection_name: str = "documents",
-        # Cloud mode
-        use_cloud: bool = False,
-        cloud_api_key: str = None,
-        cloud_tenant: str = None,
-        cloud_database: str = "RAG",
-        # Processing
+        cloud_api_key: str = "",
+        cloud_tenant: str = "",
+        cloud_database: str = "RRAG",
         chunk_size: int = 1000,
         chunk_overlap: int = 200
     ):
@@ -33,11 +28,9 @@ class RAGEngine:
         Args:
             groq_api_key: Groq API key
             model_name: LLM model name
-            persist_directory: ChromaDB persist directory (local mode)
             collection_name: Collection name
-            use_cloud: Whether to use Chroma Cloud
             cloud_api_key: Chroma Cloud API key
-            cloud_tenant: Chroma Cloud tenant
+            cloud_tenant: Chroma Cloud tenant ID
             cloud_database: Chroma Cloud database name
             chunk_size: Text chunk size
             chunk_overlap: Chunk overlap
@@ -50,8 +43,6 @@ class RAGEngine:
         self.vector_store = VectorStore(
             embeddings=self.embeddings,
             collection_name=collection_name,
-            persist_directory=persist_directory,
-            use_cloud=use_cloud,
             cloud_api_key=cloud_api_key,
             cloud_tenant=cloud_tenant,
             cloud_database=cloud_database

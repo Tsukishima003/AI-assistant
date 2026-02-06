@@ -21,18 +21,27 @@ class Settings:
     
     # Groq AI
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.1-70b-versatile")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    
+    if not GROQ_API_KEY:
+        raise ValueError("key not found")
     
     # ChromaDB Configuration
+    # Mode selection: HTTP Server > Cloud > Local (in priority order)
+    CHROMA_USE_HTTP: bool = os.getenv("CHROMA_USE_HTTP", "false").lower() == "true"
     CHROMA_USE_CLOUD: bool = os.getenv("CHROMA_USE_CLOUD", "false").lower() == "true"
+    
+    # HTTP Server mode settings (recommended for production)
+    CHROMA_SERVER_HOST: str = os.getenv("CHROMA_SERVER_HOST", "chromadb")
+    CHROMA_SERVER_PORT: int = int(os.getenv("CHROMA_SERVER_PORT", 8000))
     
     # Chroma Cloud settings
     CHROMA_CLOUD_API_KEY: str = os.getenv("CHROMA_CLOUD_API_KEY", "")
     CHROMA_CLOUD_TENANT: str = os.getenv("CHROMA_CLOUD_TENANT", "")
-    CHROMA_CLOUD_DATABASE: str = os.getenv("CHROMA_CLOUD_DATABASE", "RAG")
+    CHROMA_CLOUD_DATABASE: str = os.getenv("CHROMA_CLOUD_DATABASE", "RRAG")
     
-    # Local ChromaDB settings (fallback)
-    CHROMA_PERSIST_DIRECTORY: str = os.getenv("CHROMA_PERSIST_DIRECTORY", "./chroma_db")
+    # Local ChromaDB settings (fallback for development)
+    CHROMA_PERSIST_DIRECTORY: str = os.getenv("CHROMA_PERSIST_DIRECTORY", "../database")
     CHROMA_COLLECTION_NAME: str = os.getenv("CHROMA_COLLECTION_NAME", "documents")
     
     # Document Processing
@@ -52,8 +61,10 @@ settings = Settings()
 if not settings.GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment variables")
 
-# Validate Chroma Cloud settings if using cloud
-if settings.CHROMA_USE_CLOUD:
+# Validate ChromaDB configuration based on mode
+if settings.CHROMA_USE_HTTP:
+    print(f"🔌 ChromaDB HTTP Server mode: {settings.CHROMA_SERVER_HOST}:{settings.CHROMA_SERVER_PORT}")
+elif settings.CHROMA_USE_CLOUD:
     if not settings.CHROMA_CLOUD_API_KEY or not settings.CHROMA_CLOUD_TENANT:
         raise ValueError("CHROMA_CLOUD_API_KEY and CHROMA_CLOUD_TENANT required when CHROMA_USE_CLOUD=true")
     print(f"🌐 Chroma Cloud enabled: {settings.CHROMA_CLOUD_TENANT}/{settings.CHROMA_CLOUD_DATABASE}")

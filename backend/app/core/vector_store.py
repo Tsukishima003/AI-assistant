@@ -1,59 +1,55 @@
-"""Vector store operations using ChromaDB (local or cloud)"""
+"""Vector store operations using ChromaDB Cloud"""
 import chromadb
 from langchain_community.vectorstores import Chroma
 
 
 class VectorStore:
-    """Manages ChromaDB vector store operations (supports local and cloud)"""
+    """Manages ChromaDB vector store operations via Chroma Cloud"""
     
     def __init__(
         self, 
         embeddings,
         collection_name: str,
-        # Local mode params
-        persist_directory: str = None,
-        # Cloud mode params
-        use_cloud: bool = False,
-        cloud_api_key: str = None,
-        cloud_tenant: str = None,
-        cloud_database: str = "RAG"
+        cloud_api_key: str,
+        cloud_tenant: str,
+        cloud_database: str = "RRAG"
     ):
         """
-        Initialize vector store
+        Initialize vector store with Chroma Cloud client
         
         Args:
             embeddings: Embedding function
             collection_name: Name of the collection
-            persist_directory: Directory for local storage (local mode)
-            use_cloud: Whether to use Chroma Cloud
             cloud_api_key: Chroma Cloud API key
             cloud_tenant: Chroma Cloud tenant ID
             cloud_database: Chroma Cloud database name
         """
         self.collection_name = collection_name
         self.embeddings = embeddings
-        self.use_cloud = use_cloud
         
-        # Initialize ChromaDB client (cloud or local)
-        if use_cloud:
-            print(f"🌐 Connecting to Chroma Cloud: {cloud_tenant}/{cloud_database}")
-            try:
-                # Use CloudClient for Chroma Cloud
-                self.chroma_client = chromadb.CloudClient(
-                    api_key=cloud_api_key,
-                    tenant=cloud_tenant,
-                    database=cloud_database
-                )
-                print("✅ Connected to Chroma Cloud successfully!")
-            except Exception as e:
-                print(f"❌ Chroma Cloud connection failed: {e}")
-                print("💡 Tip: Verify your API key and tenant in Chroma Cloud dashboard")
-                raise
-        else:
-            print(f"💾 Using local ChromaDB: {persist_directory}")
-            self.chroma_client = chromadb.PersistentClient(path=persist_directory)
+        # Initialize ChromaDB Cloud client
+        print(f"🌐 Connecting to Chroma Cloud: {cloud_tenant}/{cloud_database}")
+        try:
+            # Use CloudClient for Chroma Cloud (chromadb >= 1.0)
+            self.chroma_client = chromadb.CloudClient(
+                tenant=cloud_tenant,
+                database=cloud_database,
+                api_key=cloud_api_key
+            )
+            # Test connection
+            self.chroma_client.heartbeat()
+            print("✅ Connected to Chroma Cloud successfully!")
+        except Exception as e:
+            print(f"❌ Chroma Cloud connection failed: {e}")
+            print(f"💡 Tip: Check your API key, tenant, and database settings")
+            raise
         
-        # Initialize vector store
+        # Get or create collection
+        self.collection = self.chroma_client.get_or_create_collection(
+            name=collection_name
+        )
+        
+        # Initialize LangChain vector store wrapper
         self.vector_store = Chroma(
             client=self.chroma_client,
             collection_name=collection_name,
@@ -76,8 +72,7 @@ class VectorStore:
     def get_document_count(self) -> int:
         """Get number of documents in vector store"""
         try:
-            collection = self.chroma_client.get_collection(self.collection_name)
-            return collection.count()
+            return self.collection.count()
         except:
             return 0
     
@@ -85,6 +80,9 @@ class VectorStore:
         """Clear all documents from vector store"""
         try:
             self.chroma_client.delete_collection(self.collection_name)
+            self.collection = self.chroma_client.get_or_create_collection(
+                name=self.collection_name
+            )
             self.vector_store = Chroma(
                 client=self.chroma_client,
                 collection_name=self.collection_name,

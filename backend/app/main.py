@@ -4,7 +4,11 @@ from fastapi import FastAPI
 from app.config.settings import settings
 from app.config.cors import setup_cors
 from app.routes import health, documents, chat, websocket
+from app.routes.websocket import router as websocket_router
 
+app = FastAPI(title="Real-Time RAG Assistant API")
+
+app.include_router(websocket_router)
 
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
