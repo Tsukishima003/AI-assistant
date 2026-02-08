@@ -2,17 +2,6 @@
 
 A modern, real-time AI assistant powered by **Retrieval-Augmented Generation (RAG)** using **Groq Llama** and **ChromaDB**. Chat with your documents and get intelligent, context-aware answers with beautiful streaming responses.
 
-## Features
-
-- **Groq Llama Integration** - Lightning-fast responses using Groq's LLM API
-- **RAG Pipeline** - Intelligent document retrieval with semantic search
-- **ChromaDB Vector Store** - Persistent local vector database
-- **Real-Time Streaming** - Watch responses appear token-by-token via WebSocket
-- **Multi-Format Support** - Upload PDF, DOCX, and TXT documents
-- **Premium UI** - Dark mode with glassmorphism and smooth animations
-- **Responsive Design** - Works seamlessly on desktop and mobile
-- **Source Citations** - See which documents informed each answer
-
 ## Quick Start
 
 ### Prerequisites
