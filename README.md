@@ -21,6 +21,7 @@
 
 ---
 
+<<<<<<< HEAD
 ## Features
 
 - **Groq Llama Integration** — Blazing-fast LLM responses using `llama-3.1-70b-versatile`
@@ -76,6 +77,9 @@
 ---
 
 ## Installation
+=======
+## Quick Start
+>>>>>>> a538327b783d329a1ea8af9ae337aef0e20da3cb
 
 ### Prerequisites
 
