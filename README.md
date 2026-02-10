@@ -1,195 +1,438 @@
-# Real-Time AI Assistant with RAG and LangChain
+# Real-Time RAG Assistant
 
-A modern, real-time AI assistant powered by **Retrieval-Augmented Generation (RAG)** using **Groq Llama** and **ChromaDB**. Chat with your documents and get intelligent, context-aware answers with beautiful streaming responses.
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://docker.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+
+> **Chat with your documents using AI-powered RAG** — Lightning-fast responses with Groq Llama, real-time streaming via WebSocket, and beautiful dark mode UI.
+
+---
+
+## Overview
+
+**Real-Time RAG Assistant** is a production-ready Retrieval-Augmented Generation (RAG) application that lets you upload documents and chat with them using AI. The system uses semantic search to find relevant context from your documents and generates intelligent, context-aware answers.
+
+**Key Value Proposition**: Transform your static documents into an interactive knowledge base with sub-second response times and real-time streaming answers.
+
+**Problem it Solves**: Eliminates the need to manually search through documents — just ask questions naturally and get accurate answers with source citations.
+
+---
 
 ## Features
 
-- **Groq Llama Integration** - Lightning-fast responses using Groq's LLM API
-- **RAG Pipeline** - Intelligent document retrieval with semantic search
-- **ChromaDB Vector Store** - Persistent local vector database
-- **Real-Time Streaming** - Watch responses appear token-by-token via WebSocket
-- **Multi-Format Support** - Upload PDF, DOCX, and TXT documents
-- **Premium UI** - Dark mode with glassmorphism and smooth animations
-- **Responsive Design** - Works seamlessly on desktop and mobile
-- **Source Citations** - See which documents informed each answer
+- **Groq Llama Integration** — Blazing-fast LLM responses using `llama-3.1-70b-versatile`
+- **RAG Pipeline** — Intelligent document retrieval with semantic vector search
+- **ChromaDB Vector Store** — Persistent vector database with Docker support
+- **Real-Time Streaming** — Watch responses appear token-by-token via WebSocket
+- **Multi-Format Support** — Upload PDF, DOCX, and TXT documents
+- **Premium UI** — Dark mode with glassmorphism, smooth animations, and responsive design
+- **Source Citations** — See exactly which documents informed each answer
+- **Docker Ready** — One-command deployment with Docker Compose
 
-## Quick Start
+### Roadmap
+
+- [ ] Multi-user authentication
+- [ ] Conversation history persistence
+- [ ] Document management dashboard
+- [ ] Custom embedding model support
+- [ ] Cloud deployment templates (AWS/GCP/Azure)
+
+---
+
+## Demo
+
+<!-- Add your screenshots/GIFs here -->
+<p align="center">
+  <img src="docs/images/chat-demo.gif" alt="Chat Demo" width="700"/>
+</p>
+
+<details>
+<summary>More Screenshots</summary>
+
+| Feature | Screenshot |
+|---------|------------|
+| Document Upload | `docs/images/upload.png` |
+| Chat Interface | `docs/images/chat.png` |
+| Source Citations | `docs/images/sources.png` |
+
+</details>
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 16, React 19, TypeScript, Tailwind CSS, Radix UI |
+| **Backend** | FastAPI, Python 3.8+, Uvicorn, WebSocket |
+| **LLM** | Groq API (Llama 3.1 70B) |
+| **Embeddings** | HuggingFace sentence-transformers |
+| **Vector Store** | ChromaDB (HTTP Server Mode) |
+| **Infrastructure** | Docker, Docker Compose |
+
+---
+
+## Installation
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- Groq API key ([Get one here](https://console.groq.com))
+- **Python** 3.8 or higher
+- **Node.js** 18+ and npm/pnpm
+- **Docker** & Docker Compose (recommended)
+- **Groq API Key** — [Get one free here](https://console.groq.com)
 
-### Installation
+### Option 1: Docker Compose (Recommended)
 
-1. **Clone or navigate to the project directory**
-```powershell  
-cd "c:\Users\DELL\Documents\RAG LC"
-```
+```bash
+# 1. Clone the repository
+git clone https://github.com/yourusername/rag-assistant.git
+cd rag-assistant
 
-2. **Install Python dependencies**
-```powershell
-pip install -r requirements.txt
-```
+# 2. Configure environment
+cp backend/.env.example backend/.env
+# Edit backend/.env and add your GROQ_API_KEY
 
-3. **Set up environment variables**
-
-Create a `.env` file in the project root:
-```powershell
-Copy-Item .env.example .env
-```
-
-Edit `.env` and add your Groq API key:
-```env
-GROQ_API_KEY=your_actual_groq_api_key_here
-```
-
-### Running the Application
-
-1. **Start the backend server**
-```powershell
+# 3. Start all services
 cd backend
-python main.py
+docker compose up -d
+
+# 4. Start the frontend
+cd ../Frontend
+npm install
+npm run dev
 ```
 
-The server will start at `http://localhost:8000`
+### Option 2: Local Development
 
-2. **Open the frontend**
+<details>
+<summary>Click to expand local setup instructions</summary>
 
-Open `frontend/index.html` in your web browser, or use a simple HTTP server:
-```powershell
-cd frontend
-python -m http.server 3000
+```bash
+# Backend Setup
+# 1. Create virtual environment
+cd backend
+python -m venv venv
+
+# Windows
+.\venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Start ChromaDB server (in separate terminal)
+docker run -p 8000:8000 chromadb/chroma:0.5.23
+
+# 4. Configure and run backend
+cp .env.example .env
+# Edit .env: Set GROQ_API_KEY and CHROMA_SERVER_HOST=localhost
+uvicorn app.main:app --reload --port 8001
+
+# Frontend Setup (in new terminal)
+cd Frontend
+npm install
+npm run dev
 ```
 
-Then navigate to `http://localhost:3000`
+</details>
 
-## 📖 Usage Guide
+---
 
-### 1. Upload Documents
+## Quick Start
 
-- Click the upload area or drag-and-drop files
-- Supported formats: PDF, TXT, DOCX
-- Documents are automatically processed and indexed
+### 1. Start the Services
 
-### 2. Chat with Your Documents
+```bash
+# Backend (http://localhost:8001)
+cd backend && docker compose up -d
 
-- Type your question in the input box
-- Press Enter or click the send button
-- Watch the AI response stream in real-time
-- View source documents for each answer
-
-### 3. Manage Documents
-
-- See document count in the sidebar
-- Click "Clear All" to remove all documents
-- 
-### Components
-
-- **Frontend**: HTML5, CSS3, Vanilla JavaScript with WebSocket
-- **Backend**: FastAPI with async/await support
-- **LLM**: Groq Llama (llama-3.1-70b-versatile)
-- **Embeddings**: HuggingFace sentence-transformers
-- **Vector Store**: ChromaDB with persistent storage
-- **Document Processing**: PyPDF2, python-docx
-
-## 🔧 Configuration
-
-Edit `.env` to customize:
-
-```env
-# Model selection
-GROQ_MODEL=llama-3.1-70b-versatile
-# Other options: llama-3.1-8b-instant, mixtral-8x7b-32768
-
-# Server settings
-HOST=0.0.0.0
-PORT=8000
-
-# ChromaDB settings
-CHROMA_PERSIST_DIRECTORY=./chroma_db
-CHROMA_COLLECTION_NAME=documents
-
-# Document processing
-CHUNK_SIZE=1000
-CHUNK_OVERLAP=200
+# Frontend (http://localhost:3000)
+cd Frontend && npm run dev
 ```
+
+### 2. Upload a Document
+
+```bash
+curl -X POST -F "file=@sample.pdf" http://localhost:8001/upload
+```
+
+### 3. Start Chatting
+
+```python
+import websockets
+import asyncio
+import json
+
+async def chat():
+    async with websockets.connect("ws://localhost:8001/ws/chat") as ws:
+        await ws.send(json.dumps({"message": "What is this document about?"}))
+        async for response in ws:
+            print(json.loads(response))
+
+asyncio.run(chat())
+```
+
+**Expected Output:**
+```json
+{
+  "type": "token",
+  "content": "Based on the document, this is about..."
+}
+```
+
+---
+
+## Usage
+
+### Uploading Documents
+
+| Method | Command |
+|--------|---------|
+| **cURL** | `curl -X POST -F "file=@document.pdf" http://localhost:8001/upload` |
+| **UI** | Drag & drop files or click the upload area |
+
+**Supported Formats:** PDF, DOCX, TXT
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | API info and status |
+| `/health` | GET | Health check with stats |
+| `/upload` | POST | Upload and process document |
+| `/chat` | POST | Non-streaming chat |
+| `/ws/chat` | WebSocket | Real-time streaming chat |
+| `/documents/count` | GET | Get indexed document count |
+| `/documents` | DELETE | Clear all documents |
+
+### WebSocket Chat
+
+```javascript
+const ws = new WebSocket('ws://localhost:8001/ws/chat');
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({ message: "Your question here" }));
+};
+
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === 'token') {
+    console.log(data.content); // Stream tokens
+  }
+};
+```
+
+---
 
 ## Project Structure
 
 ```
 RAG LC/
 ├── backend/
-│   ├── main.py              # FastAPI application
-│   ├── rag_engine.py        # RAG pipeline implementation
-│   └── models.py            # Pydantic data models
-├── frontend/
-│   ├── index.html           # Main HTML structure
-│   ├── styles.css           # Premium dark mode styling
-│   └── app.js               # WebSocket & UI logic
-├── requirements.txt         # Python dependencies
-├── .env.example            # Environment template
-├── .gitignore              # Git ignore rules
-└── README.md               # This file
+│   ├── app/
+│   │   ├── main.py              # FastAPI entry point
+│   │   ├── config/              # Settings & CORS
+│   │   ├── core/                # RAG engine components
+│   │   │   ├── rag_engine.py    # Main RAG orchestrator
+│   │   │   ├── embeddings.py    # Embedding generation
+│   │   │   ├── vector_store.py  # ChromaDB integration
+│   │   │   ├── llm.py           # Groq LLM wrapper
+│   │   │   └── query_engine.py  # Query processing
+│   │   ├── routes/              # API endpoints
+│   │   ├── services/            # Business logic
+│   │   ├── models/              # Pydantic schemas
+│   │   └── utils/               # Helpers & validators
+│   ├── compose.yaml             # Docker Compose config
+│   ├── Dockerfile               # Backend container
+│   ├── requirements.txt         # Python dependencies
+│   └── .env.example             # Environment template
+│
+├── Frontend/
+│   ├── app/                     # Next.js app router
+│   ├── components/              # React components (Radix UI)
+│   ├── hooks/                   # Custom React hooks
+│   ├── lib/                     # Utilities
+│   ├── styles/                  # Global styles
+│   ├── package.json             # Node dependencies
+│   └── tailwind.config.ts       # Tailwind configuration
+│
+└── README.md                    # You are here
 ```
 
-## API Endpoints
+---
 
-### REST API
+## Configuration
 
-- `GET /` - Root endpoint with API info
-- `GET /health` - Health check and stats
-- `POST /upload` - Upload document
-- `POST /chat` - Non-streaming chat (alternative to WebSocket)
-- `GET /documents/count` - Get indexed document count
-- `DELETE /documents` - Clear all documents
+### Environment Variables
 
-### WebSocket
+Create `backend/.env` from the template:
 
-- `WS /ws/chat` - Real-time streaming chat
+```env
+# Required
+GROQ_API_KEY=your_groq_api_key_here
 
-## UI Features
+# Groq Model Configuration
+GROQ_MODEL=llama-3.1-70b-versatile
 
-- **Dark Mode**: Eye-friendly dark theme
-- **Glassmorphism**: Modern translucent panels
-- **Smooth Animations**: Micro-interactions throughout
-- **Typing Indicators**: Visual feedback while AI is thinking
-- **Auto-scroll**: Messages automatically scroll into view
-- **Toast Notifications**: Elegant status messages
-- **Drag-and-Drop**: Easy document uploads
+# ChromaDB Server (Docker)
+CHROMA_SERVER_HOST=chromadb
+CHROMA_SERVER_PORT=8000
+CHROMA_COLLECTION_NAME=documents
+
+# Server Settings
+HOST=0.0.0.0
+PORT=8000
+
+# Document Processing
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
+## Testing
+
+### API Health Check
+
+```bash
+# Backend health
+curl http://localhost:8001/health
+
+# ChromaDB heartbeat
+curl http://localhost:8000/api/v1/heartbeat
+```
+
+### Run Tests
+
+```bash
+cd backend
+pytest tests/ -v
+```
+
+### API Documentation
+
+Once running, visit:
+- **Swagger UI**: http://localhost:8001/docs
+- **ReDoc**: http://localhost:8001/redoc
+
+---
+
+## Docker Commands
+
+```bash
+# Start all services
+docker compose up -d
+
+# View logs
+docker compose logs -f backend
+docker compose logs -f chromadb
+
+# Restart backend only
+docker compose restart backend
+
+# Rebuild and restart
+docker compose up -d --build
+
+# Stop all services
+docker compose down
+
+# Stop and remove volumes (WARNING: deletes data)
+docker compose down -v
+```
+
+---
 
 ## Security Notes
 
-This is a development setup. For production:
+> **This is a development setup.** For production deployment:
 
-- Use environment-specific CORS origins
-- Add authentication/authorization
-- Implement rate limiting
-- Use HTTPS/WSS protocols
-- Validate and sanitize all inputs
-- Add file upload size limits
+- [ ] Configure environment-specific CORS origins
+- [ ] Add authentication/authorization (JWT, OAuth)
+- [ ] Implement rate limiting
+- [ ] Use HTTPS/WSS protocols
+- [ ] Validate and sanitize all inputs
+- [ ] Add file upload size limits and type validation
+- [ ] Use secrets management (e.g., Docker secrets, Vault)
+
+---
 
 ## Troubleshooting
 
-**WebSocket connection fails:**
-- Ensure backend is running on port 8000
-- Check if another service is using the port
-- Verify firewall settings
+<details>
+<summary><strong>WebSocket connection fails</strong></summary>
 
-**Document upload fails:**
+- Ensure backend is running on the correct port
+- Check if another service is using the port: `netstat -an | findstr 8001`
+- Verify firewall settings allow WebSocket connections
+- Check browser console for CORS errors
+
+</details>
+
+<details>
+<summary><strong>Document upload fails</strong></summary>
+
 - Check file format (PDF, TXT, DOCX only)
-- Ensure file is not corrupted
-- Check backend logs for errors
+- Ensure file is not corrupted or password-protected
+- Check backend logs: `docker compose logs backend`
+- Verify upload directory has write permissions
 
-**No responses from AI:**
-- Verify GROQ_API_KEY is set correctly
-- Check if documents are uploaded
-- Monitor backend console for errors
+</details>
 
-## License
+<details>
+<summary><strong>No responses from AI</strong></summary>
 
-MIT License - feel free to use for personal or commercial projects.
+- Verify `GROQ_API_KEY` is set correctly in `.env`
+- Check if documents are uploaded: `curl http://localhost:8001/documents/count`
+- Monitor backend console for API errors
+- Test Groq API directly: `curl https://api.groq.com/openai/v1/models -H "Authorization: Bearer $GROQ_API_KEY"`
+
+</details>
+
+<details>
+<summary><strong>ChromaDB connection issues</strong></summary>
+
+- Ensure ChromaDB container is healthy: `docker compose ps`
+- Check ChromaDB logs: `docker compose logs chromadb`
+- Verify network connectivity between containers
+- Try restarting: `docker compose restart chromadb`
+
+</details>
+
+---
 
 ## Contributing
 
-Contributions welcome! Feel free to submit issues or pull requests.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- [LangChain](https://langchain.com) — RAG framework
+- [Groq](https://groq.com) — Ultra-fast LLM inference
+- [ChromaDB](https://trychroma.com) — Vector database
+- [FastAPI](https://fastapi.tiangolo.com) — Modern Python web framework
+- [Next.js](https://nextjs.org) — React framework
+- [shadcn/ui](https://ui.shadcn.com) — UI components
+
+---
+
+<p align="center">
+  Made with care by Your Name
+  <br>
+  Star this repo if you find it helpful!
+</p>

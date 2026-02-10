@@ -1,15 +1,10 @@
-"""Application configuration and settings"""
 import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-
 class Settings:
-    """Application settings from environment variables"""
-    
     # API Info
     APP_TITLE: str = "Real-Time RAG Assistant API"
     APP_VERSION: str = "1.0.0"
@@ -24,6 +19,7 @@ class Settings:
     GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
     
     if not GROQ_API_KEY:
+    
         raise ValueError("key not found")
     
     # ChromaDB Configuration
@@ -45,8 +41,8 @@ class Settings:
     CHROMA_COLLECTION_NAME: str = os.getenv("CHROMA_COLLECTION_NAME", "documents")
     
     # Document Processing
-    CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", 1000))
-    CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", 200))
+    CHUNK_SIZE: int = int(1000)
+    CHUNK_OVERLAP: int = int(200)
     
     # File Upload
     UPLOAD_DIRECTORY: Path = Path("./uploads")
@@ -63,13 +59,13 @@ if not settings.GROQ_API_KEY:
 
 # Validate ChromaDB configuration based on mode
 if settings.CHROMA_USE_HTTP:
-    print(f"🔌 ChromaDB HTTP Server mode: {settings.CHROMA_SERVER_HOST}:{settings.CHROMA_SERVER_PORT}")
+    print(f"ChromaDB HTTP Server mode: {settings.CHROMA_SERVER_HOST}:{settings.CHROMA_SERVER_PORT}")
 elif settings.CHROMA_USE_CLOUD:
     if not settings.CHROMA_CLOUD_API_KEY or not settings.CHROMA_CLOUD_TENANT:
         raise ValueError("CHROMA_CLOUD_API_KEY and CHROMA_CLOUD_TENANT required when CHROMA_USE_CLOUD=true")
-    print(f"🌐 Chroma Cloud enabled: {settings.CHROMA_CLOUD_TENANT}/{settings.CHROMA_CLOUD_DATABASE}")
+    print(f"Chroma Cloud enabled: {settings.CHROMA_CLOUD_TENANT}/{settings.CHROMA_CLOUD_DATABASE}")
 else:
-    print(f"💾 Local ChromaDB: {settings.CHROMA_PERSIST_DIRECTORY}")
+    print(f"Local ChromaDB: {settings.CHROMA_PERSIST_DIRECTORY}")
 
 # Ensure upload directory exists
 settings.UPLOAD_DIRECTORY.mkdir(exist_ok=True)

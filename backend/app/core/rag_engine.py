@@ -1,4 +1,3 @@
-"""Main RAG Engine - Orchestrates all core components"""
 from typing import Dict, AsyncGenerator
 from app.core.embeddings import create_embeddings
 from app.core.vector_store import VectorStore
