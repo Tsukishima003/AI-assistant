@@ -1,4 +1,3 @@
-"""FastAPI application entry point"""
 import uvicorn
 from fastapi import FastAPI
 from app.config.settings import settings

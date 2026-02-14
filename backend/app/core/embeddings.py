@@ -5,6 +5,6 @@ def create_embeddings():
    
     return HuggingFaceEmbeddings(
         model_name="BAAI/bge-m3",
-        model_kwargs={'device': 'cpu'},
+        model_kwargs={'device': 'cuda'},
         encode_kwargs={'normalize_embeddings':True}
     )

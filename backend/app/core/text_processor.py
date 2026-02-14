@@ -5,7 +5,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 class TextProcessor:
     """Handles text splitting and chunking"""
     
-    def __init__(self, chunk_size: int = 512, chunk_overlap: int = 50):
+    def __init__(self, chunk_size: int = 6000, chunk_overlap: int = 200):
         """
         Initialize text processor
         
