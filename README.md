@@ -33,16 +33,6 @@
 - **Source Citations** — See exactly which documents informed each answer
 - **Docker Ready** — One-command deployment with Docker Compose
 
-### Roadmap
-
-- [ ] Multi-user authentication
-- [ ] Conversation history persistence
-- [ ] Document management dashboard
-- [ ] Custom embedding model support
-- [ ] Cloud deployment templates (AWS/GCP/Azure)
-
----
-
 ## Demo
 
 <!-- Add your screenshots/GIFs here -->
@@ -61,8 +51,6 @@
 
 </details>
 
----
-
 ## Tech Stack
 
 | Layer | Technology |
@@ -74,12 +62,8 @@
 | **Vector Store** | ChromaDB (HTTP Server Mode) |
 | **Infrastructure** | Docker, Docker Compose |
 
----
 
-## Installation
-=======
 ## Quick Start
->>>>>>> a538327b783d329a1ea8af9ae337aef0e20da3cb
 
 ### Prerequisites
 
@@ -345,66 +329,6 @@ docker compose down
 # Stop and remove volumes (WARNING: deletes data)
 docker compose down -v
 ```
-
----
-
-## Security Notes
-
-> **This is a development setup.** For production deployment:
-
-- [ ] Configure environment-specific CORS origins
-- [ ] Add authentication/authorization (JWT, OAuth)
-- [ ] Implement rate limiting
-- [ ] Use HTTPS/WSS protocols
-- [ ] Validate and sanitize all inputs
-- [ ] Add file upload size limits and type validation
-- [ ] Use secrets management (e.g., Docker secrets, Vault)
-
----
-
-## Troubleshooting
-
-<details>
-<summary><strong>WebSocket connection fails</strong></summary>
-
-- Ensure backend is running on the correct port
-- Check if another service is using the port: `netstat -an | findstr 8001`
-- Verify firewall settings allow WebSocket connections
-- Check browser console for CORS errors
-
-</details>
-
-<details>
-<summary><strong>Document upload fails</strong></summary>
-
-- Check file format (PDF, TXT, DOCX only)
-- Ensure file is not corrupted or password-protected
-- Check backend logs: `docker compose logs backend`
-- Verify upload directory has write permissions
-
-</details>
-
-<details>
-<summary><strong>No responses from AI</strong></summary>
-
-- Verify `GROQ_API_KEY` is set correctly in `.env`
-- Check if documents are uploaded: `curl http://localhost:8001/documents/count`
-- Monitor backend console for API errors
-- Test Groq API directly: `curl https://api.groq.com/openai/v1/models -H "Authorization: Bearer $GROQ_API_KEY"`
-
-</details>
-
-<details>
-<summary><strong>ChromaDB connection issues</strong></summary>
-
-- Ensure ChromaDB container is healthy: `docker compose ps`
-- Check ChromaDB logs: `docker compose logs chromadb`
-- Verify network connectivity between containers
-- Try restarting: `docker compose restart chromadb`
-
-</details>
-
----
 
 ## Contributing
 
