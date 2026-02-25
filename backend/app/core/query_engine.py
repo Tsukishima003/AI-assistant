@@ -1,7 +1,9 @@
 """Query engine for RAG system"""
 from typing import Dict, AsyncGenerator
-from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
+from langchain_core.prompts import PromptTemplate
+from langchain_classic.chains import create_retrieval_chain 
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain 
+from langchain_core.documents import Document
 from app.core.prompts import RAG_PROMPT_TEMPLATE
 
 
@@ -28,6 +30,11 @@ class QueryEngine:
             template=RAG_PROMPT_TEMPLATE,
             input_variables=["context", "question"]
         )
+        
+        self.retriever = self.vector_store.as_retriever()
+        self.retriever.search_kwargs = {"k":4}
+        self.document_chain = create_stuff_documents_chain(self.llm , self.prompt)
+        self.chain = create_retrieval_chain(self.retriever , self.document_chain)
     
     def query(self, question: str) -> Dict:
         """
@@ -39,21 +46,13 @@ class QueryEngine:
         Returns:
             Dict: Answer and sources
         """
-        chain = RetrievalQA.from_chain_type(
-            llm=self.llm,
-            chain_type="stuff",
-            retriever=self.vector_store.as_retriever(k=4),
-            chain_type_kwargs={"prompt": self.prompt},
-            return_source_documents=True
-        )
-        
-        result = chain({"query": question})
+        result = self.chain.invoke({"input": question})
         
         sources = [doc.metadata.get('source', 'Unknown') 
-                  for doc in result.get('source_documents', [])]
+                  for doc in result.get('context', [])]
         
         return {
-            "answer": result['result'],
+            "answer": result['answer'],
             "sources": list(set(sources))  # Remove duplicates
         }
     
@@ -73,7 +72,7 @@ class QueryEngine:
             print(f"Starting query stream for: {question}")
             
             # Get relevant documents
-            docs = self.vector_store.get_relevant_documents(question, k=4)
+            docs: list[Document] = self.retriever.invoke(question)
             print(f"Retrieved {len(docs)} documents")
             
             # Build context
@@ -108,7 +107,7 @@ class QueryEngine:
             sources = [doc.metadata.get('source', 'Unknown') for doc in docs]
             yield {
                 "type": "sources",
-                "content": sources
+                "content": list(set(sources))
             }
             
             yield {

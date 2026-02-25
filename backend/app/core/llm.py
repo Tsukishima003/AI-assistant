@@ -1,4 +1,3 @@
-"""LLM configuration for Groq"""
 from langchain_groq import ChatGroq
 
 
