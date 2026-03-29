@@ -3,11 +3,6 @@ from fastapi import FastAPI
 from app.config.settings import settings
 from app.config.cors import setup_cors
 from app.routes import health, documents, chat, websocket
-from app.routes.websocket import router as websocket_router
-
-app = FastAPI(title="Real-Time RAG Assistant API")
-
-app.include_router(websocket_router)
 
 def create_app() -> FastAPI:
     """Create and configure FastAPI application"""
@@ -24,7 +19,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(documents.router)
     app.include_router(chat.router)
-    app.include_router(websocket.router)
+    app.include_router(websocket.router)  # this already has /ws/chat
     
     return app
 

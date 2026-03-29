@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Loader2 } from 'lucide-react'
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -29,7 +30,13 @@ export function ChatMessage({
       >
         <div className="flex items-center gap-2">
           {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-          <p className="text-sm">{content}</p>
+          <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+            {isAssistant ? (
+              <ReactMarkdown>{content}</ReactMarkdown>
+            ) : (
+              <p className="text-sm">{content}</p>
+            )}
+          </div>
         </div>
 
         {/* Source Citations */}

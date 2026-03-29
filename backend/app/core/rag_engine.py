@@ -15,9 +15,7 @@ class RAGEngine:
         groq_api_key: str,
         model_name: str = "llama-3.1-70b-versatile",
         collection_name: str = "documents",
-        cloud_api_key: str = "",
-        cloud_tenant: str = "",
-        cloud_database: str = "RRAG",
+        persist_dir: str = "./chroma_db",
         chunk_size: int = 1000,
         chunk_overlap: int = 200
     ):
@@ -41,10 +39,8 @@ class RAGEngine:
         self.embeddings = create_embeddings()
         self.vector_store = VectorStore(
             embeddings=self.embeddings,
-            collection_name=collection_name,
-            cloud_api_key=cloud_api_key,
-            cloud_tenant=cloud_tenant,
-            cloud_database=cloud_database
+            collection_name="documents",
+           persist_dir=persist_dir
         )
         self.llm = create_llm(groq_api_key, model_name)
         self.text_processor = TextProcessor(chunk_size, chunk_overlap)

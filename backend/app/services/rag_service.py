@@ -16,9 +16,7 @@ class RAGService:
                 groq_api_key=settings.GROQ_API_KEY,
                 model_name=settings.GROQ_MODEL,
                 collection_name=settings.CHROMA_COLLECTION_NAME,
-                cloud_api_key=settings.CHROMA_CLOUD_API_KEY,
-                cloud_tenant=settings.CHROMA_CLOUD_TENANT,
-                cloud_database=settings.CHROMA_CLOUD_DATABASE,
+                persist_dir=settings.CHROMA_PERSIST_DIR,
                 chunk_size=settings.CHUNK_SIZE,
                 chunk_overlap=settings.CHUNK_OVERLAP
             )

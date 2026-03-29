@@ -26,21 +26,28 @@ export function ChatArea({
   isLoading,
   hasDocuments,
 }: ChatAreaProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (containerRef.current) {
+      containerRef.current.scrollTo({
+        top: containerRef.current.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
   }, [messages])
 
   return (
     <div className="ml-80 flex h-screen flex-col bg-background">
-      {/* Messages Area */}
       {messages.length === 0 ? (
         <div className="flex-1 overflow-hidden">
           <WelcomeScreen />
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto px-6 py-8">
+        <div
+          ref={containerRef}
+          className="flex-1 overflow-y-auto px-6 py-8 min-h-0"
+        >
           <div className="mx-auto max-w-2xl space-y-6">
             {messages.map(message => (
               <ChatMessage
@@ -51,17 +58,17 @@ export function ChatArea({
                 sources={message.sources}
               />
             ))}
-            <div ref={messagesEndRef} />
           </div>
         </div>
       )}
 
-      {/* Chat Input */}
-      <ChatInput
-        onSendMessage={onSendMessage}
-        isDisabled={!hasDocuments}
-        isLoading={isLoading}
-      />
+      <div className="shrink-0">
+        <ChatInput
+          onSendMessage={onSendMessage}
+          isDisabled={!hasDocuments}
+          isLoading={isLoading}
+        />
+      </div>
     </div>
   )
 }

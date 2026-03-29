@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
 
 export interface WSMessage {
-    type: 'chunk' | 'sources' | 'complete' | 'error' | 'info' | 'pong'
+    type: 'token' | 'chunk' | 'complete' | 'error' | 'info' | 'pong' | 'sources' | 'info' | 'done'
     content?: string
     sources?: string[]
 }
@@ -22,14 +22,23 @@ interface UseWebSocketOptions {
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
     const {
-        onMessage,
-        onConnect,
-        onDisconnect,
-        onError,
         autoReconnect = true,
         reconnectInterval = 3000,
         heartbeatInterval = 30000,
     } = options
+
+    // Refs for callbacks — always fresh, never stale
+    const onMessageRef = useRef(options.onMessage)
+    const onConnectRef = useRef(options.onConnect)
+    const onDisconnectRef = useRef(options.onDisconnect)
+    const onErrorRef = useRef(options.onError)
+
+    useEffect(() => {
+        onMessageRef.current = options.onMessage
+        onConnectRef.current = options.onConnect
+        onDisconnectRef.current = options.onDisconnect
+        onErrorRef.current = options.onError
+    })
 
     const [isConnected, setIsConnected] = useState(false)
     const [isConnecting, setIsConnecting] = useState(false)
@@ -37,6 +46,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
     const heartbeatIntervalRef = useRef<NodeJS.Timeout | null>(null)
     const mountedRef = useRef(true)
+    const isConnectingRef = useRef(false)
 
     const clearTimers = useCallback(() => {
         if (reconnectTimeoutRef.current) {
@@ -50,9 +60,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }, [])
 
     const startHeartbeat = useCallback(() => {
-        if (heartbeatIntervalRef.current) {
-            clearInterval(heartbeatIntervalRef.current)
-        }
+        if (heartbeatIntervalRef.current) clearInterval(heartbeatIntervalRef.current)
         heartbeatIntervalRef.current = setInterval(() => {
             if (wsRef.current?.readyState === WebSocket.OPEN) {
                 wsRef.current.send(JSON.stringify({ type: 'ping' }))
@@ -63,8 +71,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     const connect = useCallback(() => {
         if (!mountedRef.current) return
         if (wsRef.current?.readyState === WebSocket.OPEN) return
-        if (isConnecting) return
+        if (isConnectingRef.current) return
 
+        isConnectingRef.current = true
         setIsConnecting(true)
         clearTimers()
 
@@ -72,24 +81,20 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
             const ws = new WebSocket(`${WS_BASE_URL}/ws/chat`)
 
             ws.onopen = () => {
-                if (!mountedRef.current) {
-                    ws.close()
-                    return
-                }
+                if (!mountedRef.current) { ws.close(); return }
+                isConnectingRef.current = false
                 setIsConnected(true)
                 setIsConnecting(false)
                 startHeartbeat()
-                onConnect?.()
+                onConnectRef.current?.()
             }
 
             ws.onmessage = (event) => {
-                console.log("recived message:" , event.data)
-                console.log("mountedRef status:" , mountedRef.current)
+                console.log("RAW MESSAGE:",event.data)
                 try {
                     const message: WSMessage = JSON.parse(event.data)
-                    console.log("Parsed message:", message)
-                    if (mountedRef.current && onMessage){
-                        onMessage(message)
+                    if (mountedRef.current) {
+                        onMessageRef.current?.(message)
                     }
                 } catch (e) {
                     console.error('Failed to parse WebSocket message:', e)
@@ -98,33 +103,32 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
             ws.onclose = () => {
                 if (!mountedRef.current) return
+                isConnectingRef.current = false
                 setIsConnected(false)
                 setIsConnecting(false)
                 clearTimers()
-                onDisconnect?.()
-
+                onDisconnectRef.current?.()
                 if (autoReconnect && mountedRef.current) {
                     reconnectTimeoutRef.current = setTimeout(() => {
-                        if (mountedRef.current) {
-                            connect()
-                        }
+                        if (mountedRef.current) connect()
                     }, reconnectInterval)
                 }
             }
 
             ws.onerror = (error) => {
                 if (!mountedRef.current) return
-                console.error('WebSocket error:', error)
+                isConnectingRef.current = false
                 setIsConnecting(false)
-                onError?.(error)
+                onErrorRef.current?.(error)
             }
 
             wsRef.current = ws
         } catch (error) {
             console.error('Failed to create WebSocket:', error)
+            isConnectingRef.current = false
             setIsConnecting(false)
         }
-    }, [autoReconnect, reconnectInterval, clearTimers, startHeartbeat, onConnect, onMessage, onDisconnect, onError, isConnecting])
+    }, [autoReconnect, reconnectInterval, clearTimers, startHeartbeat])
 
     const disconnect = useCallback(() => {
         clearTimers()
@@ -144,22 +148,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         return false
     }, [])
 
-    // Connect on mount
     useEffect(() => {
         mountedRef.current = true
         connect()
-
         return () => {
             mountedRef.current = false
             disconnect()
         }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    return {
-        isConnected,
-        isConnecting,
-        connect,
-        disconnect,
-        sendMessage,
-    }
+    return { isConnected, isConnecting, connect, disconnect, sendMessage }
 }
