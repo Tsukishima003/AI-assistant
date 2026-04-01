@@ -1,8 +1,11 @@
-"""WebSocket endpoint for streaming chat"""
+"""WebSocket endpoint for streaming chat."""
 import json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.utils.websocket_manager import manager
 from app.services.document_service import query_documents_stream, get_document_count
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 router = APIRouter(tags=["WebSocket"])
 
@@ -25,7 +28,9 @@ async def websocket_chat(websocket: WebSocket):
                     continue
                 
                 question = message_data.get("message", "")
-                print(f"Received question: {question}")
+                conversation_id = message_data.get("conversation_id")
+                logger.info("Received question via WebSocket: %s (conv=%s)",
+                          question[:100], conversation_id or "new")
                 
                 if not question:
                     await websocket.send_json({
@@ -42,15 +47,15 @@ async def websocket_chat(websocket: WebSocket):
                     })
                     continue
                 
-                # Stream response
-                async for chunk in query_documents_stream(question):
+                # Stream response with conversation memory
+                async for chunk in query_documents_stream(question, conversation_id=conversation_id):
                     await websocket.send_json(chunk)
                 
-                print("Streaming complete, connection staying open for next message...")
+                logger.debug("Streaming complete, connection staying open")
                 continue
                 
             except json.JSONDecodeError as e:
-                print(f"JSON decode error: {e}")
+                logger.warning("Invalid JSON received: %s", e)
                 await websocket.send_json({
                     "type": "error",
                     "content": "Invalid message format"
@@ -58,24 +63,22 @@ async def websocket_chat(websocket: WebSocket):
                 continue
             
             except RuntimeError as e:
-                # Client disconnected during message handling
                 if "disconnect" in str(e).lower():
-                    print(f"Client disconnected during message handling")
+                    logger.info("Client disconnected during message handling")
                     break
                 else:
-                    print(f"Runtime error: {e}")
+                    logger.error("Runtime error: %s", e)
                     continue
                 
             except Exception as e:
-                print(f"Error processing message: {type(e).__name__}: {str(e)}")
-                import traceback
-                traceback.print_exc()
+                logger.error("Error processing WebSocket message: %s: %s",
+                           type(e).__name__, str(e), exc_info=True)
                 try:
                     await websocket.send_json({
                         "type": "error",
                         "content": f"Error: {str(e)}"
                     })
-                except:
+                except Exception:
                     pass
                 continue
     
@@ -83,7 +86,6 @@ async def websocket_chat(websocket: WebSocket):
         manager.disconnect(websocket)
     
     except Exception as e:
-        print(f"WebSocket fatal error: {type(e).__name__}: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.error("WebSocket fatal error: %s: %s",
+                    type(e).__name__, str(e), exc_info=True)
         manager.disconnect(websocket)

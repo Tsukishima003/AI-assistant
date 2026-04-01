@@ -53,6 +53,7 @@ next-env.d.ts
 .env.development.local
 .env.test.local
 .env.production.local
+.env.example
 
 # ============================================
 # BUILD & CACHE
@@ -141,3 +142,7 @@ backend/chroma_db/
 
 # Uploads
 backend/uploads/
+
+backend/tests/
+backend/test_output.txt
+backend/Dockerfile/

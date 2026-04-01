@@ -67,29 +67,31 @@ class RAGEngine:
         
         return len(chunks)
     
-    def query(self, question: str) -> Dict:
+    def query(self, question: str, chat_history: str = "") -> Dict:
         """
         Query the RAG system (non-streaming)
         
         Args:
             question: User question
+            chat_history: Formatted conversation history
         
         Returns:
             Dict: Answer and sources
         """
-        return self.query_engine.query(question)
+        return self.query_engine.query(question, chat_history=chat_history)
     
-    async def query_stream(self, question: str) -> AsyncGenerator[Dict, None]:
+    async def query_stream(self, question: str, chat_history: str = "") -> AsyncGenerator[Dict, None]:
         """
         Query the RAG system with streaming response
         
         Args:
             question: User question
+            chat_history: Formatted conversation history
         
         Yields:
             Dict: Streaming response chunks
         """
-        async for chunk in self.query_engine.query_stream(question):
+        async for chunk in self.query_engine.query_stream(question, chat_history=chat_history):
             yield chunk
     
     def get_document_count(self) -> int:

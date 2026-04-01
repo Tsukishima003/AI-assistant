@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 const WS_BASE_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'
 
 export interface WSMessage {
-    type: 'token' | 'chunk' | 'complete' | 'error' | 'info' | 'pong' | 'sources' | 'info' | 'done'
+    type: 'token' | 'chunk' | 'complete' | 'error' | 'info' | 'pong' | 'sources' | 'done' | 'conversation_id'
     content?: string
     sources?: string[]
 }
@@ -140,9 +140,9 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         setIsConnecting(false)
     }, [clearTimers])
 
-    const sendMessage = useCallback((message: string) => {
+    const sendMessage = useCallback((message: string, conversation_id?: string | null) => {
         if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ message }))
+            wsRef.current.send(JSON.stringify({ message, conversation_id }))
             return true
         }
         return false

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useEffect } from 'react'
 import { Sidebar } from '@/components/sidebar'
 import { ChatArea } from '@/components/chat-area'
 import { useWebSocket, WSMessage } from '@/hooks/useWebSocket'
@@ -27,12 +27,19 @@ export default function Home() {
   const [documents, setDocuments] = useState<Document[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [conversationId, setConversationId] = useState<string | null>(null)
   const currentMessageRef = useRef<string>('')
   const currentSourcesRef = useRef<string[]>([])
   const assistantMessageIdRef = useRef<string>('')
 
   const handleWSMessage = useCallback((message: WSMessage) => {
     switch (message.type) {
+      case 'conversation_id':
+        if (message.content) {
+          setConversationId(message.content)
+        }
+        break
+
       case 'token':
       case 'chunk':
         currentMessageRef.current += message.content || ''
@@ -144,7 +151,7 @@ export default function Home() {
     currentMessageRef.current = ''
     currentSourcesRef.current = []
 
-    const sent = wsSendMessage(content)
+    const sent = wsSendMessage(content, conversationId)
     if (!sent) {
       setMessages(prev =>
         prev.map(msg =>
@@ -160,7 +167,14 @@ export default function Home() {
       setIsLoading(false)
       assistantMessageIdRef.current = ''
     }
-  }, [wsSendMessage])
+  }, [wsSendMessage, conversationId])
+
+  useEffect(() => {
+    if (documents.length === 0) {
+      setMessages([])
+      setConversationId(null)
+    }
+  }, [documents])
 
   const successfulDocs = documents.filter(d => d.status === 'success')
 

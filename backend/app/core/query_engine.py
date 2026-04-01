@@ -1,11 +1,14 @@
-"""Query engine for RAG system"""
+"""Query engine for RAG system."""
 import re
-from typing import Dict, AsyncGenerator
+from typing import Dict, AsyncGenerator, Optional
 from langchain_core.prompts import PromptTemplate
 from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.documents import Document
 from app.core.prompts import RAG_PROMPT_TEMPLATE
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def clean_citations(text: str) -> str:
@@ -24,34 +27,56 @@ class QueryEngine:
         
         self.prompt = PromptTemplate(
             template=RAG_PROMPT_TEMPLATE,
-            input_variables=["context", "question"]
+            input_variables=["context", "question", "chat_history"]
         )
         
         self.retriever = self.vector_store.as_retriever()
         self.retriever.search_kwargs = {"k": 4}
-        self.document_chain = create_stuff_documents_chain(self.llm, self.prompt)
-        self.chain = create_retrieval_chain(self.retriever, self.document_chain)
     
-    def query(self, question: str) -> Dict:
-        result = self.chain.invoke({"input": question})
-        sources = [doc.metadata.get('source', 'Unknown')
-                   for doc in result.get('context', [])]
+    def query(self, question: str, chat_history: str = "") -> Dict:
+        """Non-streaming query with optional chat history."""
+        docs = self.retriever.invoke(question)
+        context = "\n\n".join([doc.page_content for doc in docs])
+
+        history_section = ""
+        if chat_history:
+            history_section = f"Previous conversation:\n{chat_history}\n"
+
+        prompt_text = self.prompt.format(
+            context=context,
+            question=question,
+            chat_history=history_section
+        )
+
+        result = self.llm.invoke(prompt_text)
+        answer = clean_citations(result.content if hasattr(result, 'content') else str(result))
+
+        sources = [doc.metadata.get('source', 'Unknown') for doc in docs]
         return {
-            "answer": clean_citations(result['answer']),
+            "answer": answer,
             "sources": list(set(sources))
         }
     
-    async def query_stream(self, question: str) -> AsyncGenerator[Dict, None]:
+    async def query_stream(self, question: str, chat_history: str = "") -> AsyncGenerator[Dict, None]:
         from app.core.llm import create_llm
         
         try:
-            print(f"Starting query stream for: {question}")
+            logger.info("Starting query stream for: %s", question[:100])
             
             docs: list[Document] = self.retriever.invoke(question)
-            print(f"Retrieved {len(docs)} documents")
+            logger.info("Retrieved %d documents", len(docs))
             
             context = "\n\n".join([doc.page_content for doc in docs])
-            prompt = self.prompt.format(context=context, question=question)
+
+            history_section = ""
+            if chat_history:
+                history_section = f"Previous conversation:\n{chat_history}\n"
+
+            prompt_text = self.prompt.format(
+                context=context,
+                question=question,
+                chat_history=history_section
+            )
             
             streaming_llm = create_llm(
                 api_key=self.groq_api_key,
@@ -61,22 +86,21 @@ class QueryEngine:
             )
             
             full_response = ""
-            async for chunk in streaming_llm.astream(prompt):
+            async for chunk in streaming_llm.astream(prompt_text):
                 if hasattr(chunk, 'content') and chunk.content:
-                    token = clean_citations(chunk.content)  # clean citations per token
+                    token = clean_citations(chunk.content)
                     full_response += token
                     yield {
                         "type": "token",
                         "content": token
                     }
             
-            print(f"Streaming complete. Full response length: {len(full_response)}")
+            logger.info("Streaming complete. Response length: %d chars", len(full_response))
             
-            # Fix: use "sources" key not "content"
             sources = [doc.metadata.get('source', 'Unknown') for doc in docs]
             yield {
                 "type": "sources",
-                "sources": list(set(sources))  # ← fixed key
+                "sources": list(set(sources))
             }
             
             yield {
@@ -85,9 +109,7 @@ class QueryEngine:
             }
             
         except Exception as e:
-            print(f"Error in query_stream: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            logger.error("Error in query_stream: %s: %s", type(e).__name__, str(e), exc_info=True)
             yield {
                 "type": "error",
                 "content": f"{type(e).__name__}: {str(e)}"

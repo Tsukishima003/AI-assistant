@@ -1,7 +1,12 @@
+"""Vector store management using ChromaDB."""
 import chromadb
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from typing import List, Any
+from app.core.logging import get_logger
+
+logger = get_logger(__name__)
+
 
 class VectorStore:
 
@@ -15,13 +20,13 @@ class VectorStore:
         self.embeddings = embeddings
         self.persist_directory = persist_dir
 
-        print(f"Initializing local ChromaDB at: {persist_dir}")
+        logger.info("Initializing local ChromaDB", extra={"persist_dir": persist_dir})
         try:
             self.chroma_client = chromadb.PersistentClient(path=persist_dir)
-            print("Local ChromaDB initialized successfully!")
+            logger.info("Local ChromaDB initialized successfully")
         except Exception as e:
-            print(f"ChromaDB initialization failed: {e}")
-            raise e
+            logger.error("ChromaDB initialization failed: %s", e, exc_info=True)
+            raise
 
         self.collection = self.chroma_client.get_or_create_collection(
             name=collection_name
@@ -47,12 +52,12 @@ class VectorStore:
         try:
             return self.collection.count()
         except Exception as e:
-            print(f"Error counting documents: {e}")
+            logger.error("Error counting documents: %s", e)
             return 0
 
     def clear(self):
         try:
-            print(f"Clearing collection: {self.collection_name}")
+            logger.info("Clearing collection: %s", self.collection_name)
             self.chroma_client.delete_collection(self.collection_name)
 
             self.collection = self.chroma_client.get_or_create_collection(
@@ -64,6 +69,6 @@ class VectorStore:
                 collection_name=self.collection_name,
                 embedding_function=self.embeddings
             )
-            print("Collection cleared and re-initialized.")
+            logger.info("Collection cleared and re-initialized")
         except Exception as e:
-            print(f"Error clearing documents: {e}")
+            logger.error("Error clearing documents: %s", e, exc_info=True)
